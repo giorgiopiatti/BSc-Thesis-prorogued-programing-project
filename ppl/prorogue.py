@@ -20,6 +20,10 @@ class EnableProroguedCallsStatic(type):
             logger.info(f"{self.__class__}.{name} was referenced")
 
             def wrapper(*args, **kwargs):
+
+                if type(args) is not tuple:
+                    args = (args, )
+
                 pretty_args = args + \
                     tuple([f'{k}={v}' for k, v in kwargs.items()])
                 logger.info(
@@ -30,7 +34,7 @@ class EnableProroguedCallsStatic(type):
                 # Register a new function on the class
                 setattr(cls, name, handler.prorogued_fn)
 
-                return handler.prorogued_fn(*args, **kwargs)
+                return handler.prorogued_fn(args, kwargs)
 
             return wrapper
         cls.__getattr__ = getattr

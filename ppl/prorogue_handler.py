@@ -60,7 +60,7 @@ class ProrogueHandler:
 
     # Caches previous return's value by hash of all input parameters
     @functools.lru_cache(maxsize=None)
-    def prorogued_fn(self, *args, **kwargs):
+    def prorogued_fn(self, args, kwargs):
         logger.info(
             f"{self.class_name}.{self.name} ***************ProrogueHandler***************")
 
