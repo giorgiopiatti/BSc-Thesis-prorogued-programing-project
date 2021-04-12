@@ -25,3 +25,8 @@ try:
 except PPLTypeError as ex:
     # PPLTypeError('prorogued_method1() missing 1 required positional argument: arg1')
     print(repr(ex))
+
+# WARNING: PPLSubTypeWarning(
+# FunctionCallSignature: [<class 'int'>, arg1: <class 'int'>],
+# FunctionCallSignature: [<class 'int'>, arg1: <class 'bool'>])
+t.prorogued_method1(42, arg1=True)
