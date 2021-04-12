@@ -1,29 +1,27 @@
-from ppl import prorogue
+from ppl import EnableProroguedCallsStatic, PPLTypeError
 
 
-class Example(metaclass=prorogue.EnableProroguedCallsStatic):
+class Example(metaclass=EnableProroguedCallsStatic):
+    attribute = 42
 
     def foo(self):
         print("foo")
 
-    def bar(self):
-        print("bar")
-        o = self.prorogued_method2("Hi")
-        print(o)
-
 
 t = Example()
-t.foo()
-t.bar()
-t.bar()
-t.prorogued_method2("Input1")
-t.prorogued_method2("Input1")
+t.foo()  # Access already coded method
 
-print('----------First call to prorogued_method1----------')
-t.prorogued_method1(42, test=10)
+t.prorogued_method1(42, arg1=10)  # TYPING: ok (first call)
+t.prorogued_method1(42, arg1=10)  # TYPING: ok, uses cached value
+t.prorogued_method1(42, arg1=1)  # TYPING: ok, different argument
 
-print('----------Second call to prorogued_method1----------')
-t.prorogued_method1(42, test=10)
+try:
+    t.prorogued_method1(42)
+except PPLTypeError as ex:
+    print(repr(ex))  # PPLTypeError('prorogued_method1() missing 1 arguments')
 
-print('----------Third call to prorogued_method1 with TypeError----------')
-t.prorogued_method1(43, 23, 10)
+try:
+    t.prorogued_method1(42, arg=1)
+except PPLTypeError as ex:
+    # PPLTypeError('prorogued_method1() missing 1 required positional argument: arg1')
+    print(repr(ex))
