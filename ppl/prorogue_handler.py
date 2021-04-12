@@ -121,9 +121,37 @@ class ProrogueHandler:
         return out
 
     def ask_for_output(self, args, kwargs):
-        res = input(
-            f'Function call to {self.name}({args},{kwargs}) was prorogued, please enter the expected output: ')
+        print(
+            f'> Function call to {self.name}({args},{kwargs}) was prorogued.\n ')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
+        t = None
 
-        # TODO: how to type output type, just return and see? ask for builtin type from programmer?
+       # Ask the programmer for built-in type
+        while True:
+            t = input('> Type possible built-in type: str, int, float, bool: ')
+            if t in ['int', 'str', 'float', 'bool']:
+                break
+            else:
+                print('> Invalid type!')
+
+        # Ask the programmer for value (only built-in type supported until now)
+        while True:
+            value = input('> Insert prorogued call return value: ')
+            res = None
+
+            def _bool(x):
+                if x == 'True':
+                    return True
+                elif x == 'False':
+                    return False
+                else:
+                    raise ValueError()
+
+            switch = {'int': int, 'str': str, 'float': float, 'bool': _bool}
+            try:
+                res = switch[t](value)
+                break
+            except ValueError:
+                print('> Invalid value!')
+
         return res
