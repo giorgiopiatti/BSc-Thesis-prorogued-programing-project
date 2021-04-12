@@ -92,7 +92,7 @@ class ProrogueHandler:
     # We need to be able to pass all possible parameters, this is the most possible general function in Python
     def prorogued_fn(self, *args, **kwargs):
         logger.info(
-            f"{self.class_name}.{self.name} ***************ProrogueHandler***************")
+            f"{self.class_name}.{self.name} running ProrogueHandler")
         signature = FunctionCallSignature(args, kwargs)
         try:
             self.fn_typecheck(args, kwargs)
