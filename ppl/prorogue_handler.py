@@ -89,16 +89,14 @@ class ProrogueHandler:
 
         return True
 
-    # Caches previous return's value by hash of all input parameters
-    @functools.lru_cache(maxsize=None)
     # We need to be able to pass all possible parameters, this is the most possible general function in Python
     def prorogued_fn(self, *args, **kwargs):
         logger.info(
             f"{self.class_name}.{self.name} ***************ProrogueHandler***************")
-
+        signature = FunctionCallSignature(args, kwargs)
         try:
             self.fn_typecheck(args, kwargs)
-            out = self.ask_for_output(args, kwargs)
+            out = self.wrapper_get_out(signature, *args, **kwargs)
             return out
         # Skip internal traceback, better preserves expected behavior to end programmer TODO: skip also this layer, but how?
         except (PPLTypeError) as ex:
@@ -111,6 +109,16 @@ class ProrogueHandler:
             raise ex.with_traceback(exc_traceback)
         except PPLTypeWarning as ex:
             print(f'WARNING: {repr(ex)}')
+            out = self.wrapper_get_out(signature, *args, **kwargs)
+            return out
+
+    # Caches previous return's value by hash of all input parameters
+    # Since hash(True)==hash(1.0)==hash(1), we pass the signature, such that each call is treated differently.
+
+    @functools.lru_cache(maxsize=None)
+    def wrapper_get_out(self, signature, *args, **kwargs):
+        out = self.ask_for_output(args, kwargs)
+        return out
 
     def ask_for_output(self, args, kwargs):
         res = input(

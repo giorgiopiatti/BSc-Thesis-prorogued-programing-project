@@ -78,6 +78,9 @@ class FunctionCallSignature:
     def get_keywords(self):
         return list(map(lambda x: x.name, self.kwargs))
 
+    def __hash__(self):
+        return hash((*self.args, *self.kwargs))
+
 
 class TypeMistmatch:
 
@@ -120,3 +123,6 @@ class FunctionArgument:
 
     def is_equal_id(self, value: FunctionArgument):
         return self.name == value.name and self.position == value.position
+
+    def __hash__(self):
+        return hash((self.type, self.name, self.position))
