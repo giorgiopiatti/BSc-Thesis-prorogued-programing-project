@@ -98,24 +98,24 @@ class ProrogueHandler:
 
         try:
             self.fn_typecheck(args, kwargs)
+            out = self.ask_for_output(args, kwargs)
+            return out
         # Skip internal traceback, better preserves expected behavior to end programmer TODO: skip also this layer, but how?
-        except (PPLTypeError, PPLTypeWarning) as ex:
+        except (PPLTypeError) as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             try:
                 exc_traceback = exc_traceback.tb_next
                 exc_traceback = exc_traceback.tb_next
             except Exception:
                 pass
-            ex.__traceback__ = exc_traceback
-            raise ex
-
-        out = self.ask_for_output(args, kwargs)
-
-        return out
+            raise ex.with_traceback(exc_traceback)
+        except PPLTypeWarning as ex:
+            print(f'WARNING: {repr(ex)}')
 
     def ask_for_output(self, args, kwargs):
-        input(
+        res = input(
             f'Function call to {self.name}({args},{kwargs}) was prorogued, please enter the expected output: ')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
 
         # TODO: how to type output type, just return and see? ask for builtin type from programmer?
+        return res
