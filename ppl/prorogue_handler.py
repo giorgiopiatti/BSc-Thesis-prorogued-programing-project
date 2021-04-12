@@ -3,51 +3,9 @@ import sys
 import functools
 
 from ppl.function_signature import FunctionCallSignature
+from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning, PPLSuperTypeWarning, PPLTypeError, PPLTypeWarning
 
 logger = logging.getLogger(__name__)
-
-
-# START - define custom exceptions
-
-class PPLTypeError(TypeError):
-    '''
-   TypeError: This error is raised when we are sure that typing does not succeeded 
-    '''
-    pass
-
-
-class PPLTypeWarning(Exception):
-    '''
-    General TypeWarning. First parameter is the first seen prorogued calls, the second parameter is instead the 
-    signature, within this warning was raised.
-    '''
-
-    def __init__(self, first_call_signature, call_signature):
-        self.first_call_signature = first_call_signature
-        self.call_signature = call_signature
-
-
-class PPLSubTypeWarning(PPLTypeWarning):
-    '''
-        call_signature <: first_call_signature 
-    '''
-    pass
-
-
-class PPLSuperTypeWarning(PPLTypeWarning):
-    '''
-        call_signature :> first_call_signature 
-    '''
-    pass
-
-
-class PPLIncomparableTypeWarning(PPLTypeWarning):
-    '''
-        Both statements call_signature :> first_call_signature and  call_signature <: first_call_signature  do not hold.
-    '''
-    pass
-
-# END - define custom exceptions
 
 
 class ProrogueHandler:
@@ -133,7 +91,8 @@ class ProrogueHandler:
 
     # Caches previous return's value by hash of all input parameters
     @functools.lru_cache(maxsize=None)
-    def prorogued_fn(self, *args, **kwargs): # We need to be able to pass all possible parameters, this is the most possible general function in Python
+    # We need to be able to pass all possible parameters, this is the most possible general function in Python
+    def prorogued_fn(self, *args, **kwargs):
         logger.info(
             f"{self.class_name}.{self.name} ***************ProrogueHandler***************")
 
@@ -150,7 +109,13 @@ class ProrogueHandler:
             ex.__traceback__ = exc_traceback
             raise ex
 
-        out = input(
+        out = self.ask_for_output(args, kwargs)
+
+        return out
+
+    def ask_for_output(self, args, kwargs):
+        input(
             f'Function call to {self.name}({args},{kwargs}) was prorogued, please enter the expected output: ')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
-        return out
+
+        # TODO: how to type output type, just return and see? ask for builtin type from programmer?
