@@ -34,7 +34,8 @@ class EnableProroguedCallsStatic(type):
                 # Register a new function on the class
                 setattr(cls, name, handler.prorogued_fn)
 
-                return handler.prorogued_fn(*args, *kwargs) # Unpack parameters 
+                # Unpack parameters
+                return handler.prorogued_fn(*args, **kwargs)
             return wrapper
         cls.__getattr__ = getattr
 
