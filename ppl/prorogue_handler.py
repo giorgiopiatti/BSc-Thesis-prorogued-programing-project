@@ -124,11 +124,7 @@ class ProrogueHandler:
         out = self.ask_for_output(args, kwargs)
         return out
 
-    def ask_for_output(self, args, kwargs):
-        print(
-            f'> Function call to {self.name}({args},{kwargs}) was prorogued.')
-        # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
-
+    def save_return_value(self, programmer_input):
         def function_context(name):
             if name in kwargs:
                 return kwargs[name]
@@ -139,12 +135,19 @@ class ProrogueHandler:
             else:
                 raise PPLTypeError(f'{name} not found in scope')
 
-            # Ask the programmer for value (only built-in type supported until now)
+        return parse_to_python(programmer_input, function_context=function_context)
+
+    def ask_for_output(self, args, kwargs):
+        print(
+            f'> Function call to {self.name}({args},{kwargs}) was prorogued.')
+        # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
+
+        # Ask the programmer for value (only built-in type supported until now)
         while True:
             value = input('> Insert prorogued call return value: ')
             res = None
             try:
-                res = parse_to_python(value, function_context=function_context)
+                res = self.save_return_value(value)
                 break
             except UnexpectedToken:
                 print('> Invalid expression!')
