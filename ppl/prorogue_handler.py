@@ -149,7 +149,6 @@ class ProrogueHandler:
             except UnexpectedToken:
                 print('> Invalid expression!')
             except VisitError as e:
-                raise e.orig_exc from e
-                # print(e.orig_exc.__repr__())
+                raise e.orig_exc from None
 
         return res
