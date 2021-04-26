@@ -5,18 +5,22 @@ import functools
 from ppl.function_signature import FunctionCallSignature
 from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning, PPLSuperTypeWarning, PPLTypeError, PPLTypeWarning
 
+from ppl.function_output import parse_to_python
+from lark.exceptions import UnexpectedToken, VisitError
+
 logger = logging.getLogger(__name__)
 
 
 class ProrogueHandler:
 
-    def __init__(self, class_name, name, args, kwargs):
+    def __init__(self, instance, name, args, kwargs):
         self.name = name
-        self.class_name = class_name
+        self.instance = instance
+        self.class_name = instance.__class__
         self.first_call_signature = FunctionCallSignature(args, kwargs)
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
-        '''
+        ''' 
             Perform the typecheck for the function. We refine the judgment from the first call to subsequent calls.
 
             Currently it performs only argument count checks and keyword matching.
@@ -122,36 +126,30 @@ class ProrogueHandler:
 
     def ask_for_output(self, args, kwargs):
         print(
-            f'> Function call to {self.name}({args},{kwargs}) was prorogued.\n ')
+            f'> Function call to {self.name}({args},{kwargs}) was prorogued.')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
-        t = None
 
-       # Ask the programmer for built-in type
-        while True:
-            t = input('> Type possible built-in type: str, int, float, bool: ')
-            if t in ['int', 'str', 'float', 'bool']:
-                break
+        def function_context(name):
+            if name in kwargs:
+                return kwargs[name]
+            elif name in self.instance.__dict__:
+                return self.instance.__dict__[name]
+            elif name in self.instance.__class__.__dict__:
+                return self.instance.__class__.__dict__[name]
             else:
-                print('> Invalid type!')
+                raise PPLTypeError(f'{name} not found in scope')
 
-        # Ask the programmer for value (only built-in type supported until now)
+            # Ask the programmer for value (only built-in type supported until now)
         while True:
             value = input('> Insert prorogued call return value: ')
             res = None
-
-            def _bool(x):
-                if x == 'True':
-                    return True
-                elif x == 'False':
-                    return False
-                else:
-                    raise ValueError()
-
-            switch = {'int': int, 'str': str, 'float': float, 'bool': _bool}
             try:
-                res = switch[t](value)
+                res = parse_to_python(value, function_context=function_context)
                 break
-            except ValueError:
-                print('> Invalid value!')
+            except UnexpectedToken:
+                print('> Invalid expression!')
+            except VisitError as e:
+                raise e.orig_exc from e
+                # print(e.orig_exc.__repr__())
 
         return res
