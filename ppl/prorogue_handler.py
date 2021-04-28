@@ -124,7 +124,7 @@ class ProrogueHandler:
         out = self.ask_for_output(args, kwargs)
         return out
 
-    def save_return_value(self, programmer_input):
+    def save_return_value(self, programmer_input, kwargs):
         def function_context(name):
             if name in kwargs:
                 return kwargs[name]
@@ -147,7 +147,7 @@ class ProrogueHandler:
             value = input('> Insert prorogued call return value: ')
             res = None
             try:
-                res = self.save_return_value(value)
+                res = self.save_return_value(value, kwargs)
                 break
             except UnexpectedToken:
                 print('> Invalid expression!')
