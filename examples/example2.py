@@ -5,7 +5,7 @@ class Example(metaclass=EnableProroguedCallsStatic):
     attribute = 42
 
     def foo(self):
-        self.test = 69
+        self.attribute_2 = 42*2
         print("foo")
 
 
