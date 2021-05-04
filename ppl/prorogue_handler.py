@@ -8,6 +8,8 @@ from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning,
 from ppl.function_output import parse_to_python
 from lark.exceptions import UnexpectedToken, VisitError
 
+from ppl.cache import hashable_cache
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +22,7 @@ class ProrogueHandler:
         self.first_call_signature = FunctionCallSignature(args, kwargs)
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
-        ''' 
+        '''
             Perform the typecheck for the function. We refine the judgment from the first call to subsequent calls.
 
             Currently it performs only argument count checks and keyword matching.
@@ -119,7 +121,15 @@ class ProrogueHandler:
     # Caches previous return's value by hash of all input parameters
     # Since hash(True)==hash(1.0)==hash(1), we pass the signature, such that each call is treated differently.
 
-    @functools.lru_cache(maxsize=None)
+    # @functools.lru_cache(maxsize=None)
+    # By using the decorator @functools.lru_cache(maxsize=None) to cache previous seen values creates some issues
+    # when we try to hash list or dicts.
+    #
+    # Another approach that would work for caches but breaks return by reference (i.e. a reference to a list) is using
+    # the decorator @hashable_cache(functools.lru_cache(maxsize=None)). But the it breaks the pass by reference
+    # of mutable containers, and keeps the reference of objects.
+    #
+
     def wrapper_get_out(self, signature, *args, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
