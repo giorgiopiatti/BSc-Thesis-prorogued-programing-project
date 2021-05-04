@@ -5,14 +5,20 @@ import functools
 from ppl.function_signature import FunctionCallSignature
 from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning, PPLSuperTypeWarning, PPLTypeError, PPLTypeWarning
 
+from ppl.function_output import parse_to_python
+from lark.exceptions import UnexpectedToken, VisitError
+
+from ppl.cache import hashable_cache
+
 logger = logging.getLogger(__name__)
 
 
 class ProrogueHandler:
 
-    def __init__(self, class_name, name, args, kwargs):
+    def __init__(self, instance, name, args, kwargs):
         self.name = name
-        self.class_name = class_name
+        self.instance = instance
+        self.class_name = instance.__class__
         self.first_call_signature = FunctionCallSignature(args, kwargs)
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
@@ -115,43 +121,50 @@ class ProrogueHandler:
     # Caches previous return's value by hash of all input parameters
     # Since hash(True)==hash(1.0)==hash(1), we pass the signature, such that each call is treated differently.
 
-    @functools.lru_cache(maxsize=None)
+    # @functools.lru_cache(maxsize=None)
+    # By using the decorator @functools.lru_cache(maxsize=None) to cache previous seen values creates some issues
+    # when we try to hash list or dicts.
+    #
+    # Another approach that would work for caches but breaks return by reference (i.e. a reference to a list) is using
+    # the decorator @hashable_cache(functools.lru_cache(maxsize=None)). But the it breaks the pass by reference
+    # of mutable containers, and keeps the reference of objects.
+    #
+
     def wrapper_get_out(self, signature, *args, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
 
+    def save_return_value(self, programmer_input, kwargs):
+        # TODO: this actually we should create two different function context
+        # one for the variables in scope only of the function, and an other for
+        # variables that can be accessed via 'self'
+        def function_context(name):
+            if name in kwargs:
+                return kwargs[name]
+            elif name in self.instance.__dict__:
+                return self.instance.__dict__[name]
+            elif name in self.instance.__class__.__dict__:
+                return self.instance.__class__.__dict__[name]
+            else:
+                raise PPLTypeError(f'{name} not found in scope')
+
+        return parse_to_python(programmer_input, function_context=function_context)
+
     def ask_for_output(self, args, kwargs):
         print(
-            f'> Function call to {self.name}({args},{kwargs}) was prorogued.\n ')
+            f'> Function call to {self.name}({args},{kwargs}) was prorogued.')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
-        t = None
-
-       # Ask the programmer for built-in type
-        while True:
-            t = input('> Type possible built-in type: str, int, float, bool: ')
-            if t in ['int', 'str', 'float', 'bool']:
-                break
-            else:
-                print('> Invalid type!')
 
         # Ask the programmer for value (only built-in type supported until now)
         while True:
             value = input('> Insert prorogued call return value: ')
             res = None
-
-            def _bool(x):
-                if x == 'True':
-                    return True
-                elif x == 'False':
-                    return False
-                else:
-                    raise ValueError()
-
-            switch = {'int': int, 'str': str, 'float': float, 'bool': _bool}
             try:
-                res = switch[t](value)
+                res = self.save_return_value(value, kwargs)
                 break
-            except ValueError:
-                print('> Invalid value!')
+            except UnexpectedToken:
+                print('> Invalid expression!')
+            except VisitError as e:
+                raise e.orig_exc from None
 
         return res

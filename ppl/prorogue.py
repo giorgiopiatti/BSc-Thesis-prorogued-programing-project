@@ -29,7 +29,7 @@ class EnableProroguedCallsStatic(type):
                 logger.info(
                     f"{self.__class__}.{name} {pretty_args} was called")  # FIXME: format of kwargs
 
-                handler = ProrogueHandler(self.__class__, name, args, kwargs)
+                handler = ProrogueHandler(self, name, args, kwargs)
 
                 # Register a new function on the class
                 setattr(cls, name, handler.prorogued_fn)
@@ -60,7 +60,7 @@ class EnableProroguedCallsInstance(type):
                 logger.info(
                     f"{self.__class__}.{name} {pretty_args} was called")  # FIXME: format of kwargs
 
-                handler = ProrogueHandler(self.__class__, name, args, kwargs)
+                handler = ProrogueHandler(self, name, args, kwargs)
 
                 # Register a new function on the object, notice how the function is the same for the whole class. i.e. we capture the fact that the
                 # function could depend from the object state
