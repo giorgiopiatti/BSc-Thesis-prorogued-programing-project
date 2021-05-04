@@ -135,6 +135,9 @@ class ProrogueHandler:
         return out
 
     def save_return_value(self, programmer_input, kwargs):
+        # TODO: this actually we should create two different function context
+        # one for the variables in scope only of the function, and an other for
+        # variables that can be accessed via 'self'
         def function_context(name):
             if name in kwargs:
                 return kwargs[name]
