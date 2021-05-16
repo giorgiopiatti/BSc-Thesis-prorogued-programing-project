@@ -1,0 +1,3 @@
+from ppl import enable_module_level_prorogued_calls
+
+enable_module_level_prorogued_calls(__name__)
