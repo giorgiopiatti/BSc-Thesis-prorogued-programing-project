@@ -1,5 +1,6 @@
 import logging
 from ppl.prorogue_handler import ProrogueHandler
+from ppl import config
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,10 @@ class EnableProroguedCallsStatic(type):
         super().__init__(object_or_name, bases, dict)
 
         def getattr(self, name):
+            if config.get_status():
+                raise AttributeError(
+                    f"'{self.__class__.__name__}' has no attribute '{name}'")
+
             logger.info(f"{self.__class__}.{name} was referenced")
 
             def wrapper(*args, **kwargs):
@@ -52,6 +57,10 @@ class EnableProroguedCallsInstance(type):
         super().__init__(object_or_name, bases, dict)
 
         def getattr(self, name):
+            if config.get_status():
+                raise AttributeError(
+                    f"'{self.__class__.__name__}' has no attribute '{name}'")
+
             logger.info(f"{self.__class__}.{name} was referenced")
 
             def wrapper(*args, **kwargs):

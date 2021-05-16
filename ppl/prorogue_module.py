@@ -1,6 +1,7 @@
 import sys
 from types import ModuleType
 from ppl.prorogue_handler import ProrogueHandler
+from ppl import config
 
 import logging
 logger = logging.getLogger(__name__)
@@ -14,6 +15,10 @@ class ModuleWrapper(ModuleType):
         pass
 
     def __getattr__(self, name):
+        if config.get_status():
+            raise AttributeError(
+                f"module '{__name__}' has no attribute '{name}'")
+
         original_module_name = self.__name__
 
         logger.info(f"{original_module_name}.{name} was referenced")
