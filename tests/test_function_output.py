@@ -51,16 +51,18 @@ class TestFunctionOutput(unittest.TestCase):
         self.assertEqual(parse_to_python(expr), [obj, obj])
 
     def test_free_var_context(self):
-        def fn_context(name):
+        def local_var(name):
             if name == 'x':
                 return 42
             return None
+        fn_context = {}
+        fn_context['local_var'] = local_var
 
         res = parse_to_python('x', function_context=fn_context)
         self.assertEqual(res, 42)
 
     def test_complex_1(self):
-        def fn_context(name):
+        def local_var(name):
             if name == 'x':
                 return 42
             if name == 'y':
@@ -69,6 +71,9 @@ class TestFunctionOutput(unittest.TestCase):
                 return {'a': 7}
             return None
         expr = '(x, y, {"key": d})'
+
+        fn_context = {}
+        fn_context['local_var'] = local_var
         res = parse_to_python(expr, function_context=fn_context)
         self.assertEqual(res, (42, 'Hello', {'key': {'a': 7}}))
 

@@ -138,15 +138,27 @@ class ProrogueHandler:
         # TODO: this actually we should create two different function context
         # one for the variables in scope only of the function, and an other for
         # variables that can be accessed via 'self'
-        def function_context(name):
+        function_context = {}
+
+        def fn_var(name):
             if name in kwargs:
                 return kwargs[name]
-            elif name in self.instance.__dict__:
+            raise PPLTypeError(f'{name} not found in scope')
+
+        def instance_var(name):
+            if name in self.instance.__dict__:
                 return self.instance.__dict__[name]
-            elif name in self.instance.__class__.__dict__:
+            raise PPLTypeError(f'{name} not found in scope')
+
+        def class_var(base, name):
+            if base == self.instance.__class__.__name__ and \
+                    name in self.instance.__class__.__dict__:
                 return self.instance.__class__.__dict__[name]
-            else:
-                raise PPLTypeError(f'{name} not found in scope')
+            raise PPLTypeError(f'{name} not found in scope')
+
+        function_context['fn_var'] = fn_var
+        function_context['instance_var'] = instance_var
+        function_context['class_var'] = class_var
 
         return parse_to_python(programmer_input, function_context=function_context)
 

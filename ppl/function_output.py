@@ -19,7 +19,14 @@ return_value_grammar = r"""
         | "False" -> false
         | "None" -> none
         | STRING_ESCAPED_QUOTES -> string
-        | CNAME -> free_var
+        | id -> local_var
+        | instance_var
+        | class_var
+
+    id: CNAME -> identifier
+
+    instance_var: "self." id
+    class_var: id "." id
 
     kvpair: atom ":" expression
     singleton: "(" expression "," ")"
@@ -27,7 +34,7 @@ return_value_grammar = r"""
     list: "[" [expression ("," expression)*] "]"
     dict: "{" [kvpair ("," kvpair)*] "}"
     set: "{" [expression ("," expression)*]  "}"
-  
+
     STRING_ESCAPED_QUOTES: /[\"'][^\"']*[\"']/
 
     %import common.CNAME
@@ -89,13 +96,28 @@ class TreeToPython(Transformer):
         def __eq__(self, value):
             return self.name == value.name
 
-    def free_var(self, name):
+    def local_var(self, name):
         if self.function_context is None:
             return self.FreeVariable(name)
         else:
-            return self.function_context(name)
+            return self.function_context['local_var'](name)
 
-    free_var = v_args(inline=True)(free_var)
+    def instance_var(self, name):
+        if self.function_context is None:
+            return self.FreeVariable(name)
+        else:
+            return self.function_context['instance_var'](name)
+
+    def class_var(self, base, name):
+        if self.function_context is None:
+            return self.FreeVariable(name)
+        else:
+            return self.function_context['class_var'](base, name)
+
+    identifier = v_args(inline=True)(str)
+    local_var = v_args(inline=True)(local_var)
+    instance_var = v_args(inline=True)(instance_var)
+    class_var = v_args(inline=True)(class_var)
 
 
 def parse_to_python(programmer_input, function_context=None):
