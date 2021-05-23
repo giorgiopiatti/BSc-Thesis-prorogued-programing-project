@@ -8,7 +8,9 @@ from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning,
 from ppl.function_output import parse_to_python
 from lark.exceptions import UnexpectedToken, VisitError
 
-from ppl.cache import hashable_cache
+from ppl.cache_helper import cache_key
+
+import cachetools
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +122,6 @@ class ProrogueHandler:
 
     # Caches previous return's value by hash of all input parameters
     # Since hash(True)==hash(1.0)==hash(1), we pass the signature, such that each call is treated differently.
-
     # @functools.lru_cache(maxsize=None)
     # By using the decorator @functools.lru_cache(maxsize=None) to cache previous seen values creates some issues
     # when we try to hash list or dicts.
@@ -130,6 +131,7 @@ class ProrogueHandler:
     # of mutable containers, and keeps the reference of objects.
     #
 
+    @cachetools.cached(cache={}, key=cache_key)
     def wrapper_get_out(self, signature, *args, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
