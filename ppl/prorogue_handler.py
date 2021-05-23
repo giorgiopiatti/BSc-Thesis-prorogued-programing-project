@@ -140,7 +140,7 @@ class ProrogueHandler:
         # variables that can be accessed via 'self'
         function_context = {}
 
-        def fn_var(name):
+        def local_var(name):
             if name in kwargs:
                 return kwargs[name]
             raise PPLTypeError(f'{name} not found in scope')
@@ -156,7 +156,7 @@ class ProrogueHandler:
                 return self.instance.__class__.__dict__[name]
             raise PPLTypeError(f'{name} not found in scope')
 
-        function_context['fn_var'] = fn_var
+        function_context['local_var'] = local_var
         function_context['instance_var'] = instance_var
         function_context['class_var'] = class_var
 
