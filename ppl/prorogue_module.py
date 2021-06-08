@@ -55,6 +55,7 @@ def enable_module_level_prorogued_calls(name):
 
     original_module.__class__ = ModuleWrapper
     new_module = original_module
+    new_module.__class__.__name__ = name
 
     # getattr(type(new_module), "__metamodule_init__", lambda self: None)(
     #     new_module)

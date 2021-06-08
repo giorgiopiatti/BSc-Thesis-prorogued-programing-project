@@ -10,6 +10,7 @@ from lark.exceptions import UnexpectedToken, VisitError
 
 from ppl.cache_helper import cache_key
 
+from ppl.io import write, get_input
 import cachetools
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class ProrogueHandler:
     def __init__(self, instance, name, args, kwargs):
         self.name = name
         self.instance = instance
-        self.class_name = instance.__class__
+        self.class_name = instance.__class__.__name__
         self.first_call_signature = FunctionCallSignature(args, kwargs)
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
@@ -116,7 +117,7 @@ class ProrogueHandler:
                 pass
             raise ex.with_traceback(exc_traceback)
         except PPLTypeWarning as ex:
-            print(f'WARNING: {repr(ex)}')
+            write(f'WARNING: {repr(ex)}')
             out = self.wrapper_get_out(signature, *args, **kwargs)
             return out
 
@@ -165,19 +166,19 @@ class ProrogueHandler:
         return parse_to_python(programmer_input, function_context=function_context)
 
     def ask_for_output(self, args, kwargs):
-        print(
-            f'> Function call to {self.name}({args},{kwargs}) was prorogued.')
+        write(
+            f'> Function call to {self.class_name}.{self.name}({args},{kwargs}) was prorogued.')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
 
         # Ask the programmer for value (only built-in type supported until now)
         while True:
-            value = input('> Insert prorogued call return value: ')
+            value = get_input('Insert prorogued call return value: ')
             res = None
             try:
                 res = self.save_return_value(value, kwargs)
                 break
             except UnexpectedToken:
-                print('> Invalid expression!')
+                write('> Invalid expression!')
             except VisitError as e:
                 raise e.orig_exc from None
 
