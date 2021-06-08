@@ -21,15 +21,15 @@ except PPLTypeError as ex:
     print(repr(ex))  # PPLTypeError('prorogued_method1() missing 1 arguments')
 
 try:
-    t.prorogued_method1(42, arg=1)
+    t.prorogued_method1(42, bad_arg=1)
 except PPLTypeError as ex:
     # PPLTypeError('prorogued_method1() missing 1 required positional argument: arg1')
     print(repr(ex))
 
 # WARNING: PPLSubTypeWarning(
 # FunctionCallSignature: [<class 'int'>, arg1: <class 'int'>],
-# FunctionCallSignature: [<class 'int'>, arg1: <class 'bool'>])
-t.prorogued_method1(42, arg1=True)
+# FunctionCallSignature: [<class 'int'>, arg1: <class 'list'>])
+t.prorogued_method1(42, arg1=[1, 2, 3])
 
 
 res = t.prorogued_method1(42, arg1=10)  # TYPING: ok. Uses cached value
