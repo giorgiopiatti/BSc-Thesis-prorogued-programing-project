@@ -12,55 +12,91 @@ class Board(dict):
     player_turn = None
 
     def __init__(self):
-        for x, p in list(zip(self.x_axis, START_PATTERN)):
-            self[x+'8'] = p(Colours.BLACK, self, x+'8')
-            self[x+'1'] = p(Colours.WHITE, self, x+'1')
+        """
+        Initialize the board with pieces at start position.
+        First turn is always white.
+        """
+        for x, piece in list(zip(self.x_axis, START_PATTERN)):
+            self[x+'8'] = piece(Colours.BLACK, self, x+'8')
+            self[x+'1'] = piece(Colours.WHITE, self, x+'1')
 
-        for x in self.x_axis:
+        for x in self.x_axis:  # Initialize paws
             self[x+'7'] = pieces.Pawn(Colours.BLACK, self,  x+'7')
             self[x+'2'] = pieces.Pawn(Colours.WHITE, self, x+'2')
 
         self.player_turn = Colours.WHITE
 
-    def shift(self, p1, p2):
-        piece = self[p1]
-        if self.player_turn != piece.color:
-            raise NotYourTurn("Not " + piece.color + "'s turn!")
-        enemy = (Colours.WHITE if piece.color ==
-                 Colours.BLACK else Colours.BLACK)
-        moves_available = piece.allowed_moves()
-        if p2 not in moves_available:
+    def shift(self, pos_src, pos_dst):
+        """ 
+        Shift one piece in pos_src to pos_dst if move is allowed according to chess rules.
+        We check that:
+        - current turn correspond to the piece's color
+        - pos_dst is reachable_positions by performing a valid move
+        - performing the move does not result in check 
+        """
+        piece_src = self[pos_src]
+        if self.player_turn != piece_src.color:
+            raise NotYourTurn("Not " + piece_src.color + "'s turn!")
+        color_opponent = (Colours.WHITE if piece_src.color ==
+                          Colours.BLACK else Colours.BLACK)
+        moves_available = piece_src.reachable_positions()
+        if pos_dst not in moves_available:
             raise InvalidMove
-        if self.allowed_moves(enemy) and self.is_in_check_after_move(p1, p2):
+        if self.reachable_positions(color_opponent) and self.is_in_check_after_move(pos_src, pos_dst):
             raise Check
-        if not moves_available and self.king_in_check(piece.color):
+        else:
+            self.update_piece_position(pos_src, pos_dst)
+            self.player_turn = (Colours.WHITE if piece_src.color ==
+                                Colours.BLACK else Colours.BLACK)
+
+    def game_status(self, color):
+        """
+        Check if color is in checkmate or cannot do any move
+        """
+        moves_available = self.reachable_positions_do_not_check(color)
+        if not moves_available and self.king_in_check(color):
             raise CheckMate
         elif not moves_available:
             raise Draw
-        else:
-            self.update_piece_position(p1, p2)
 
-    def update_piece_position(self, p1, p2):
-        piece = self[p1]
-        dest = self.get(p2)
-        if dest is not None:
-            del dest
-        del self[p1]
-        self[p2] = piece
-        self[p2].update_coordinates(p2)
-
-        self.player_turn = (Colours.WHITE if piece.color ==
-                            Colours.BLACK else Colours.BLACK)
+    def update_piece_position(self, pos_src, pos_dst):
+        """
+        Give src position move the pieces to dst position, eating destination position if needed.
+        """
+        piece_src = self[pos_src]
+        piece_dest = self.get(pos_dst)
+        if piece_dest is not None:
+            del piece_dest
+        del self[pos_src]
+        self[pos_dst] = piece_src
+        self[pos_dst].update_coordinates(pos_dst)
 
     def position_of_king(self, color):
+        """ 
+        Return coordinate of king's position
+        """
         for pos in self.keys():
             if isinstance(self[pos], pieces.King) and self[pos].color == color:
                 return pos
 
-    def is_in_check_after_move(self, p1, p2):  # TODO
+    def is_in_check_after_move(self, pos_src, pos_dst):  # TODO
+        """
+        Check if after executing piece move from pos_src to pos_dst, 
+        king of same player is in check
+        """
         return False
 
-    def allowed_moves(self, color):  # TODO
+    def reachable_positions(self, color):  # TODO
+        """
+        Return list of all reachable_positions position by performing one move of any piece.
+        """
+        return []
+
+    def reachable_positions_do_not_check(self, color):  # TODO
+        """
+        Return list of all reachable_positions position by performing one move of any piece that do not put 
+        kings in check afterwards.
+        """
         return []
 
     def occupied(self, color):  # TODO

@@ -1,4 +1,4 @@
-import chessboard
+from chessboard import Board
 import tkinter as tk
 import sys
 from pieces import Coordinate
@@ -20,8 +20,10 @@ class GUI:
     focused = None
     images = {}
 
-    def __init__(self, parent, chessboard):
-        self.chessboard = chessboard
+    def __init__(self, parent):
+        """
+        Initialize user interface
+        """
         self.parent = parent
         # Adding Top Menu
         self.menubar = tk.Menu(parent)
@@ -31,31 +33,30 @@ class GUI:
         self.parent.config(menu=self.menubar)
 
         # Adding Frame
-        self.btmfrm = tk.Frame(parent, height=64)
-        self.info_label = tk.Label(self.btmfrm,
+        self.board_frame = tk.Frame(parent, height=DIM_SQUARE)
+        self.info_label = tk.Label(self.board_frame,
                                    text="   White to Start the Game  ",
                                    fg=COLOR2)
         self.info_label.pack(side=tk.RIGHT, padx=8, pady=5)
-        self.btmfrm.pack(fill="x", side=tk.BOTTOM)
+        self.board_frame.pack(fill="x", side=tk.BOTTOM)
 
-        canvas_width = COLUMNS * DIM_SQUARE
-        canvas_height = ROWS * DIM_SQUARE
-        self.canvas = tk.Canvas(parent, width=canvas_width,
-                                height=canvas_height)
+        self.canvas = tk.Canvas(parent, width=COLUMNS * DIM_SQUARE,
+                                height=ROWS * DIM_SQUARE)
         self.canvas.pack(padx=8, pady=8)
         self.draw_board()
         self.canvas.bind("<Button-1>", self.square_clicked)
 
+        self.new_game()
+
     def new_game(self):
-        self.chessboard = chessboard.Board()
+        self.chessboard = Board()
         self.draw_board()
-        # self.draw_pieces()
+        self.draw_pieces()
         self.info_label.config(text="   White to Start the Game  ", fg=COLOR2)
 
     def square_clicked(self, event):
-        col_size = row_size = DIM_SQUARE
-        selected_column = int(event.x / col_size)
-        selected_row = 7 - int(event.y / row_size)
+        selected_column = int(event.x / DIM_SQUARE)
+        selected_row = 7 - int(event.y / DIM_SQUARE)
         coord = Coordinate(selected_column, selected_row)
         pos = coord.get_alpha()
 
@@ -64,7 +65,7 @@ class GUI:
             self.selected_piece = None
             self.focused = None
             self.draw_board()
-            # self.draw_pieces()
+            self.draw_pieces()
         self.focus(pos)
         self.draw_board()
 
@@ -80,18 +81,20 @@ class GUI:
                 raise error
             else:
                 turn = ('white' if piece.color == 'black' else 'black')
-                self.info_label["text"] = '' + piece.color.capitalize() + \
-                    "  :  " + p1 + p2 + '    ' + turn.capitalize() + '\'s turn'
+                self.info_label["text"] = f'{piece.color.capitalize()} : {p1}{p2} {turn.capitalize()}\'s turn.'
 
     def focus(self, pos):
         piece = self.chessboard.get(pos)
         if piece is not None and (piece.color == self.chessboard.player_turn):
             self.selected_piece = pos
 
-            focused = []
-            for f in self.chessboard[pos].allowed_moves():
-                if not self.chessboard.is_in_check_after_move(pos, f):
-                    focused.append(f)
+            try:
+                self.chessboard.game_status(piece.color)
+            except chessboard.ChessError as error:
+                self.info_label["text"] = error.__class__.__name__
+                raise error
+            focused = set(self.chessboard[pos].reachable_positions()) & set(
+                self.chessboard.reachable_positions_do_not_check(piece.color))  # perform intersection
             self.focused = list(map(self.get_screen_coordinates,
                                 focused))
 
@@ -126,9 +129,8 @@ class GUI:
                 filename = "pieces_image/" + piece.get_image_name()
                 piecename = piece.short_name + str(x) + str(y)
                 if filename not in self.images:
-                    path = sys.path[0]+'/' + filename
                     self.images[filename] = tk.PhotoImage(
-                        file=path)
+                        file=sys.path[0]+'/' + filename)
                 self.canvas.create_image(0, 0, image=self.images[filename],
                                          tags=(piecename, "occupied"),
                                          anchor="c")
@@ -141,15 +143,12 @@ class GUI:
         return Coordinate.y_axis.index(int(y)), Coordinate.x_axis.index(x)
 
 
-def main(board):
+def main():
     root = tk.Toplevel()
     root.title("Chess")
-    gui = GUI(root, board)
-    gui.draw_board()
-    gui.draw_pieces()
+    GUI(root)
     root.mainloop()
 
 
 if __name__ == "__main__":
-    board = chessboard.Board()
-    main(board)
+    main()

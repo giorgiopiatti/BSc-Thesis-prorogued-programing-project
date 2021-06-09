@@ -1,10 +1,14 @@
 from enum import Enum
 import sys
 
-from ppl import EnableProroguedCallsInstance
-
 
 class Coordinate():
+    """
+    Represent a cordinate on the board place.
+    Chess's notation is of the form LetterNumber, but to better calculate we save them as 
+    number coordinates in the space [0,7]x[0,7]
+
+    """
     x_axis = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
     y_axis = (1, 2, 3, 4, 5, 6, 7, 8)
 
@@ -17,19 +21,24 @@ class Coordinate():
             return None
         return self.x_axis[self.x] + str(self.y_axis[self.y])
 
-    def get_num_coordinates(self):
-        if not self.is_on_board():
-            return None
-        return self.x, self.y
-
     def __add__(self, coord):
+        """
+        Element-wise addition
+        """
         x, y = coord
         return Coordinate(self.x + x, self.y + y)
 
     def __mul__(self, a):
+        """
+        Multiplication by a scalar
+        """
         return Coordinate(self.x * a, self.y * a)
 
     def is_on_board(self):
+        """
+        Check if coordinate is on the board, i.e. part of the 
+        subspace [0,7]x[0,7]
+        """
         x = self.x
         y = self.y
         if x < 0 or x > 7 or y < 0 or y > 7:
@@ -42,13 +51,13 @@ class Coordinate():
         return Coordinate(Coordinate.x_axis.index(a[0]), int(a[1])-1)
 
 
-class Piece(object,  metaclass=EnableProroguedCallsInstance):
+class Piece(object):
     coordinate = None
 
-    def __init__(self, color, board, alpha_coordinates, short_name):
+    def __init__(self, color, board, alpha_coordinate, short_name):
         self.color = color
         self.board = board
-        self.coordinate = Coordinate.init_from_alpha(alpha_coordinates)
+        self.coordinate = Coordinate.init_from_alpha(alpha_coordinate)
         self.short_name = short_name
 
     def get_image_name(self):
@@ -60,31 +69,31 @@ class Piece(object,  metaclass=EnableProroguedCallsInstance):
 
 class King(Piece):
 
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'k')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'k')
 
 
 class Queen(Piece):
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'q')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'q')
 
 
 class Rook(Piece):
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'r')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'r')
 
 
 class Bishop(Piece):
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'b')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'b')
 
 
 class Knight(Piece):
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'n')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'n')
 
-    def allowed_moves(self):
-        allowed_moves = []
+    def reachable_positions(self):
+        reachable_positions = []
         start_position = self.coordinate
 
         deltas = (
@@ -92,24 +101,26 @@ class Knight(Piece):
         for x, y in deltas:
             dest = start_position + (x, y)
             if dest.get_alpha() not in self.board.occupied(self.color):
-                allowed_moves.append(dest)
-        allowed_moves = filter(lambda x: x.is_on_board(), allowed_moves)
-        allowed_moves = list(map(lambda x: x.get_alpha(), allowed_moves))
-        return allowed_moves
+                reachable_positions.append(dest)
+        reachable_positions = filter(
+            lambda x: x.is_on_board(), reachable_positions)
+        reachable_positions = list(
+            map(lambda x: x.get_alpha(), reachable_positions))
+        return reachable_positions
 
 
 class Pawn(Piece):
-    def __init__(self, color, board, num_coordinates):
-        super().__init__(color, board, num_coordinates, 'p')
+    def __init__(self, color, board, alpha_coordinate):
+        super().__init__(color, board, alpha_coordinate, 'p')
 
-    def allowed_moves(self):
+    def reachable_positions(self):
 
         if self.color == 'white':
             startpos, direction, enemy = 1, 1, 'black'
         else:
             startpos, direction, enemy = 6, -1, 'white'
 
-        allowed_moves = []
+        reachable_positions = []
         # Moving
         occupied_cells = self.board.occupied(
             'white') + self.board.occupied('black')
@@ -118,21 +129,23 @@ class Pawn(Piece):
         forward = start_position + (0,  direction)
 
         if forward.get_alpha() not in occupied_cells:
-            allowed_moves.append(forward)
+            reachable_positions.append(forward)
             # Pawn is at the beginning, a movement of 2 cells is allowed
             if start_position.y == startpos:
                 double_forward = forward + (0, direction)
                 if double_forward.get_alpha() not in occupied_cells:
-                    allowed_moves.append(double_forward)
+                    reachable_positions.append(double_forward)
 
         # Attacking (works diagonally)
         for a in [-1, 1]:
             attack = start_position + (a, direction)
             if attack.get_alpha() in self.board.occupied(enemy):
-                allowed_moves.append(attack)
-        allowed_moves = filter(lambda x: x.is_on_board(), allowed_moves)
-        allowed_moves = list(map(lambda x: x.get_alpha(), allowed_moves))
-        return allowed_moves
+                reachable_positions.append(attack)
+        reachable_positions = filter(
+            lambda x: x.is_on_board(), reachable_positions)
+        reachable_positions = list(
+            map(lambda x: x.get_alpha(), reachable_positions))
+        return reachable_positions
 
 
 class Colours:
