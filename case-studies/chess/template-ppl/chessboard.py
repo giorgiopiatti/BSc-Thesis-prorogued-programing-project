@@ -1,12 +1,13 @@
 from copy import deepcopy
 import pieces
 from pieces import Colours
+from ppl import EnableProroguedCallsInstance
 
 START_PATTERN = (pieces.Rook, pieces.Knight, pieces.Bishop, pieces.Queen,
                  pieces.King, pieces.Bishop, pieces.Knight, pieces.Rook)
 
 
-class Board(dict):
+class Board(dict, metaclass=EnableProroguedCallsInstance):
     x_axis = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
     y_axis = (1, 2, 3, 4, 5, 6, 7, 8)
     player_turn = None

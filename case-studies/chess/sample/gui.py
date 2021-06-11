@@ -1,4 +1,5 @@
 from chessboard import Board
+import chessboard
 import tkinter as tk
 import sys
 from pieces import Coordinate

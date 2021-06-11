@@ -1,6 +1,8 @@
 from enum import Enum
 import sys
 
+from ppl import EnableProroguedCallsInstance
+
 
 class Coordinate():
     """
@@ -51,7 +53,7 @@ class Coordinate():
         return Coordinate(Coordinate.x_axis.index(a[0]), int(a[1])-1)
 
 
-class Piece(object):
+class Piece(object, metaclass=EnableProroguedCallsInstance):
     coordinate = None
 
     def __init__(self, color, board, alpha_coordinate, short_name):
