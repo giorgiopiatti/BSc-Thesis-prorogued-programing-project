@@ -121,6 +121,7 @@ class ProrogueHandler:
                 exc_traceback = exc_traceback.tb_next
             except Exception:
                 pass
+            write(f'Error: {repr(ex)}')
             raise ex.with_traceback(exc_traceback)
         except PPLTypeWarning as ex:
             write(f'WARNING: {repr(ex)}')
