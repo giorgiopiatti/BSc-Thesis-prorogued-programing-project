@@ -10,7 +10,7 @@ from lark.exceptions import UnexpectedToken, VisitError
 
 from ppl.cache_helper import cache_key
 
-from ppl.io import write, get_input
+from ppl.io import write, get_input, write_instance
 import cachetools
 
 logger = logging.getLogger(__name__)
@@ -18,11 +18,16 @@ logger = logging.getLogger(__name__)
 
 class ProrogueHandler:
 
-    def __init__(self, instance, name, args, kwargs):
+    def __init__(self, instance, name, args, kwargs, instance_call=False):
         self.name = name
         self.instance = instance
         self.class_name = instance.__class__.__name__
         self.first_call_signature = FunctionCallSignature(args, kwargs)
+        if instance_call:
+            self.ppl_instance_dict = instance.__dict__
+        else:
+            self.ppl_instance_dict = None
+        self.instance_call = instance_call
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
         '''
@@ -105,7 +110,8 @@ class ProrogueHandler:
         signature = FunctionCallSignature(args, kwargs)
         try:
             self.fn_typecheck(args, kwargs)
-            out = self.wrapper_get_out(signature, *args, **kwargs)
+            out = self.wrapper_get_out(
+                signature, *args, ppl_instance_dict=self.ppl_instance_dict, **kwargs)
             return out
         # Skip internal traceback, better preserves expected behavior to end programmer TODO: skip also this layer, but how?
         except (PPLTypeError) as ex:
@@ -118,7 +124,8 @@ class ProrogueHandler:
             raise ex.with_traceback(exc_traceback)
         except PPLTypeWarning as ex:
             write(f'WARNING: {repr(ex)}')
-            out = self.wrapper_get_out(signature, *args, **kwargs)
+            out = self.wrapper_get_out(
+                signature, *args, ppl_instance_dict=self.ppl_instance_dict,  **kwargs)
             return out
 
     # Caches previous return's value by hash of all input parameters
@@ -133,7 +140,7 @@ class ProrogueHandler:
     #
 
     @cachetools.cached(cache={}, key=cache_key)
-    def wrapper_get_out(self, signature, *args, **kwargs):
+    def wrapper_get_out(self, signature, *args, ppl_instance_dict, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
 
@@ -169,6 +176,12 @@ class ProrogueHandler:
         write(
             f'> Function call to {self.class_name}.{self.name}({args},{kwargs}) was prorogued.')
         # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
+
+        if self.instance_call:
+            write_instance(
+                f'{self.class_name} instance dict: {self.ppl_instance_dict}')
+        else:
+            write_instance('')
 
         # Ask the programmer for value (only built-in type supported until now)
         while True:

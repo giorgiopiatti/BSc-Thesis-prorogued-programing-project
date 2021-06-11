@@ -11,6 +11,7 @@ o1.foo(42)
 
 
 o2 = ExampleStatic()
+o2.attribute = 4000
 o2.foo(42)  # No interaction
 
 
@@ -24,6 +25,9 @@ class ExampleInstance(metaclass=prorogue.EnableProroguedCallsInstance):
 o1 = ExampleInstance()
 o1.foo(42)
 
+o1.foo(42)
 
 o2 = ExampleInstance()
+o2.foo(42)  # Interaction
+o2.attribute = 1000
 o2.foo(42)  # Interaction
