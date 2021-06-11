@@ -1,11 +1,11 @@
 from ppl import prorogue
 
 
-class ExampleStatic(metaclass=prorogue.EnableProroguedCallsStatic):
+class ExampleStatic(metaclass=prorogue.PPLEnableProroguedCallsStatic):
     pass
 
 
-print('\n----------EnableProroguedCallsStatic----------\n')
+print('\n----------PPLEnableProroguedCallsStatic----------\n')
 o1 = ExampleStatic()
 o1.foo(42)
 
@@ -15,10 +15,10 @@ o2.attribute = 4000
 o2.foo(42)  # No interaction
 
 
-print('\n----------EnableProroguedCallsInstance----------\n')
+print('\n----------PPLEnableProroguedCallsInstance----------\n')
 
 
-class ExampleInstance(metaclass=prorogue.EnableProroguedCallsInstance):
+class ExampleInstance(metaclass=prorogue.PPLEnableProroguedCallsInstance):
     pass
 
 

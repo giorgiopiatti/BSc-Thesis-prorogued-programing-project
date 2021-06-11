@@ -1,7 +1,7 @@
-from ppl import EnableProroguedCallsStatic
+from ppl import PPLEnableProroguedCallsStatic
 
 
-class TicTacToeGame(metaclass=EnableProroguedCallsStatic):
+class TicTacToeGame(metaclass=PPLEnableProroguedCallsStatic):
 
     # Skeleton: to be prorogued
     def put_marker(self, board: 'board', cell: int, marker: 'O|X') -> 'board':

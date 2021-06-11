@@ -1,7 +1,7 @@
-from ppl import EnableProroguedCallsStatic
+from ppl import PPLEnableProroguedCallsStatic
 
 
-class TicTacToeGame(metaclass=EnableProroguedCallsStatic):
+class TicTacToeGame(metaclass=PPLEnableProroguedCallsStatic):
 
     def print_board(self, board: 'board'):
         print('\n'.join(' '.join(board[x:x+3]) for x in (0, 3, 6)))

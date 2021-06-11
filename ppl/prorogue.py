@@ -5,7 +5,7 @@ from ppl import config
 logger = logging.getLogger(__name__)
 
 
-class EnableProroguedCallsStatic(type):
+class PPLEnableProroguedCallsStatic(type):
     '''
         Metaclass to allow prorogued methods inside a class.
         Handles the injection of code via Python built-in methods
@@ -45,7 +45,7 @@ class EnableProroguedCallsStatic(type):
         cls.__getattr__ = getattr
 
 
-class EnableProroguedCallsInstance(type):
+class PPLEnableProroguedCallsInstance(type):
     '''
         Metaclass to allow prorogued methods inside a class.
         Handles the injection of code via Python built-in methods

@@ -1,7 +1,7 @@
-from ppl import EnableProroguedCallsStatic, PPLTypeError
+from ppl import PPLEnableProroguedCallsStatic, PPLTypeError
 
 
-class Example(metaclass=EnableProroguedCallsStatic):
+class Example(metaclass=PPLEnableProroguedCallsStatic):
     attribute = 42
 
     def foo(self):

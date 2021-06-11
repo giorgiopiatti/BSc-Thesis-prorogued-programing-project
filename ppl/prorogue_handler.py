@@ -176,7 +176,7 @@ class ProrogueHandler:
     def ask_for_output(self, args, kwargs):
         write(
             f'> Function call to {self.class_name}.{self.name}({args},{kwargs}) was prorogued.')
-        # TODO: we need to expose which object is associated, and its internal structure if we're using EnableProroguedCallsInstance
+        # TODO: we need to expose which object is associated, and its internal structure if we're using PPLEnableProroguedCallsInstance
 
         if self.instance_call:
             write_instance(
