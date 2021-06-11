@@ -10,8 +10,6 @@ logger = logging.getLogger(__name__)
 class ModuleWrapper(ModuleType):
 
     def __metamodule_init__(self):
-        # setattr(self, 'ModuleWrapper#original_module_name',
-        #         name)  # prevent exposing this
         pass
 
     def __getattr__(self, name):
@@ -31,7 +29,7 @@ class ModuleWrapper(ModuleType):
             pretty_args = args + \
                 tuple([f'{k}={v}' for k, v in kwargs.items()])
             logger.info(
-                f"{original_module_name}.{name} {pretty_args} was called")  # FIXME: format of kwargs
+                f"{original_module_name}.{name} {pretty_args} was called")
 
             handler = ProrogueHandler(self, name, args, kwargs)
 
@@ -57,6 +55,4 @@ def enable_module_level_prorogued_calls(name):
     new_module = original_module
     new_module.__class__.__name__ = name
 
-    # getattr(type(new_module), "__metamodule_init__", lambda self: None)(
-    #     new_module)
     sys.modules[name] = new_module

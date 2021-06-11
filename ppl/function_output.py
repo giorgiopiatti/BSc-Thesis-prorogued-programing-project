@@ -3,7 +3,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# TODO: implement access to free variables via self keyword
 
 return_value_grammar = r"""
     expression: tuple

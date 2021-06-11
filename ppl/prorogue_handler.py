@@ -130,25 +130,15 @@ class ProrogueHandler:
             return out
 
     # Caches previous return's value by hash of all input parameters
-    # Since hash(True)==hash(1.0)==hash(1), we pass the signature, such that each call is treated differently.
-    # @functools.lru_cache(maxsize=None)
-    # By using the decorator @functools.lru_cache(maxsize=None) to cache previous seen values creates some issues
-    # when we try to hash list or dicts.
-    #
-    # Another approach that would work for caches but breaks return by reference (i.e. a reference to a list) is using
-    # the decorator @hashable_cache(functools.lru_cache(maxsize=None)). But the it breaks the pass by reference
-    # of mutable containers, and keeps the reference of objects.
-    #
-
     @cachetools.cached(cache={}, key=cache_key)
     def wrapper_get_out(self, signature, *args, ppl_instance_dict, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
 
     def save_return_value(self, programmer_input, kwargs):
-        # TODO: this actually we should create two different function context
+        # We create different function context
         # one for the variables in scope only of the function, and an other for
-        # variables that can be accessed via 'self'
+        # variables that can be accessed via 'self', and for class variables
         function_context = {}
 
         def local_var(name):
