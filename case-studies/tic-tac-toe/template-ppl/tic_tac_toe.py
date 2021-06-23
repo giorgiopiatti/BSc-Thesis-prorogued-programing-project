@@ -6,15 +6,6 @@ class TicTacToeGame(metaclass=PPLEnableProroguedCallsStatic):
     def print_board(self, board: 'board'):
         print('\n'.join(' '.join(board[x:x+3]) for x in (0, 3, 6)))
 
-    def turn(self, board, xo) -> 'board':
-        while True:
-            choice = int(input(f'Put {xo} in a cell: '))
-
-            if choice in range(1, 10) and self.is_cell_free(board, choice):
-                break
-            print("Wrong input!")
-        return self.put_marker(board, choice, xo)
-
     def play(self):
         board = list('123456789')
         player_id = 0

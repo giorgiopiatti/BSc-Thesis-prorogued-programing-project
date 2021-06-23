@@ -13,7 +13,7 @@ In the following folder you find 4 files.
 
 
 #### Environment setup 
-```source ../../venv/bin/activate```
+```source ./venv/bin/activate```
 
 #### How to run the program
 python3 gui.py

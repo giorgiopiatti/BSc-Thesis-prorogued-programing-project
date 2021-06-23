@@ -1,12 +1,10 @@
 
 # An Implementation of Prorogued Programming in Python
-## Study - chess task
+## Study - Tic Tac Toe task
 
-In the following folder you find 4 files.
+In the following folder you find 2 files.
 
-- gui.py: main file, were the program starts
-- chessboard.py: were the chess logic resides (you're going to modify this)
-- pieces.py: were the chess logic for pieces reside (you' re going to modify this)
+- tic_tac_toe.py: main file, were the program starts and where the logic resides
 - test.py: small test suite to test the functions that you are expected to implement.
 
 
@@ -16,7 +14,7 @@ In the following folder you find 4 files.
 ```source ./venv/bin/activate```
 
 #### How to run the program
-python3 gui.py
+python3 tic_tac_toe.py
 
 #### How to run test
 python3 -m unittest test.py
