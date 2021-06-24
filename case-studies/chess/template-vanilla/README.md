@@ -4,9 +4,9 @@
 
 In the following folder you find 4 files.
 
-- gui.py: main file, were the program starts
-- chessboard.py: were the chess logic resides (you're going to modify this)
-- pieces.py: were the chess logic for pieces reside (you' re going to modify this)
+- gui.py: main file, where the program starts
+- chessboard.py: where the chess logic resides (you're going to modify this)
+- pieces.py: where the chess logic for pieces reside (you're going to modify this)
 - test.py: small test suite to test the functions that you are expected to implement.
 
 

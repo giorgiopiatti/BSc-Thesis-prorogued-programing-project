@@ -4,7 +4,7 @@
 
 In the following folder you find 2 files.
 
-- tic_tac_toe.py: main file, were the program starts and where the logic resides
+- tic_tac_toe.py: main file, where the program starts and where the logic resides
 - test.py: small test suite to test the functions that you are expected to implement.
 
 
