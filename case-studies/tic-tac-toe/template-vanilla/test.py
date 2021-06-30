@@ -1,5 +1,7 @@
 import unittest
+import unittest.mock as mock
 from tic_tac_toe import TicTacToeGame
+import tic_tac_toe
 
 
 class TestTicTacToe(unittest.TestCase):
@@ -34,6 +36,17 @@ class TestTicTacToe(unittest.TestCase):
         game = TicTacToeGame()
         self.assertTrue(game.board_is_full(list('XXOXXOOXX')))
         self.assertFalse(game.board_is_full(list('OOO456789')))
+
+    def test_turn(self):
+        game = TicTacToeGame()
+
+        with mock.patch.object(__builtins__, 'input', lambda _: '1'):
+            res = game.turn(list('123456789'), 'O')
+            self.assertListEqual(res, list('O23456789'))
+
+        with mock.patch.object(__builtins__, 'input', lambda _: '2'):
+            res = game.turn(list('123456789'), 'X')
+            self.assertListEqual(res, list('1X3456789'))
 
 
 if __name__ == '__main__':
