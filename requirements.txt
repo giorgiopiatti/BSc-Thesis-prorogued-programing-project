@@ -1,0 +1,8 @@
+autopep8==1.5.7
+cachetools==4.2.2
+lark-parser==0.11.2
+-e git+git@gitlab.ethz.ch:piattigi/ETH-BSc_thesis-prorogued_programing-project.git@dae4479edfcb657c54850feff1c72a47d1de0412#egg=ppl
+Prorogued-Programmin-Language-Python-library==0.0.0
+pycodestyle==2.7.0
+tk==0.1.0
+toml==0.10.2
