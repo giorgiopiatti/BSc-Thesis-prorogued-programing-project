@@ -9,9 +9,14 @@ In the following folder you find 2 files.
 
 
 
+#### Requirements 
+You need to have installed Python 3
 
 #### Environment setup 
-```source ./venv/bin/activate```
+Linux: ```source ./venv/bin/activate```
+Windows: using command line: ```. \venv\Scripts\activate.bat ```
+
+More info on https://docs.python.org/3/library/venv.html
 
 #### How to run the program
 python3 tic_tac_toe.py
