@@ -9,7 +9,7 @@ class ExampleApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title('PPL')
-        self.geometry("500x1200")
+        self.geometry("290x1200")
         self.text = tk.Text(self, wrap="word", width=SIZE)
         self.text.place(relheight=.45)
         #self.text.pack(side="top", pady=5, padx=5, expand=True)
@@ -23,9 +23,9 @@ class ExampleApp(tk.Tk):
         self.entry = tk.Entry(self,  width=SIZE)
         self.msg = tk.Label(self, text='')
 
-        
         self.msg.place(relheight=.05, rely=.90)
         self.entry.place(relheight=.05, rely=.95)
+
 
 app = ExampleApp()
 
