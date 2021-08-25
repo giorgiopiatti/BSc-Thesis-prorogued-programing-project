@@ -16,12 +16,12 @@ class PPLEnableProroguedCallsStatic(type):
 
     def __new__(metacls, name, bases, namespace, **kwargs):
         return super().__new__(metacls, name, bases, namespace)
-    
+
     def __init__(cls, object_or_name, bases, dict, **kwargs):
         super().__init__(object_or_name, bases, dict)
 
         do_cache = True
-        if 'cache' in kwargs.keys() and  kwargs['cache'] is False:
+        if 'cache' in kwargs.keys() and kwargs['cache'] is False:
             do_cache = False
 
         def getattr(self, name):
@@ -41,7 +41,8 @@ class PPLEnableProroguedCallsStatic(type):
                 logger.info(
                     f"{self.__class__}.{name} {pretty_args} was called")  # FIXME: format of kwargs
 
-                handler = ProrogueHandler(self, name, args, kwargs, do_cache=do_cache)
+                handler = ProrogueHandler(
+                    self, name, args, kwargs, do_cache=do_cache)
 
                 # Register a new function on the class
                 setattr(cls, name, handler.prorogued_fn)
@@ -62,12 +63,12 @@ class PPLEnableProroguedCallsInstance(type):
 
     def __new__(metacls, name, bases, namespace, **kwargs):
         return super().__new__(metacls, name, bases, namespace)
-        
+
     def __init__(cls, object_or_name, bases, dict, **kwargs):
         super().__init__(object_or_name, bases, dict)
-        
+
         do_cache = True
-        if 'cache' in kwargs.keys() and  kwargs['cache'] is False:
+        if 'cache' in kwargs.keys() and kwargs['cache'] is False:
             do_cache = False
 
         def getattr(self, name):
@@ -93,3 +94,25 @@ class PPLEnableProroguedCallsInstance(type):
 
             return wrapper
         cls.__getattr__ = getattr
+
+
+def prorogue(do_cache=True):
+    def dec(function):
+        def wrapper(*args, **kwargs):
+            handler = ProrogueHandler(
+                "", function.__name__, args, kwargs, do_cache=do_cache)
+            return handler.prorogued_fn(*args, **kwargs)
+
+        return wrapper
+    return dec
+
+
+def prorogue_method(do_cache=True):
+    def dec(function):
+        def wrapper(self, *args, **kwargs):
+            handler = ProrogueHandler(
+                self, function.__name__, args, kwargs, do_cache=do_cache)
+            return handler.prorogued_fn(*args, **kwargs)
+
+        return wrapper
+    return dec

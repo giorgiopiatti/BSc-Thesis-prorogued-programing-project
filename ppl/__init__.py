@@ -1,6 +1,6 @@
 import logging
 
-from ppl.prorogue import PPLEnableProroguedCallsStatic, PPLEnableProroguedCallsInstance
+from ppl.prorogue import PPLEnableProroguedCallsStatic, PPLEnableProroguedCallsInstance, prorogue, prorogue_method
 from ppl.custom_exceptions import PPLIncomparableTypeWarning, PPLSubTypeWarning, PPLSuperTypeWarning, PPLTypeError, PPLTypeWarning
 
 from ppl.prorogue_module import enable_module_level_prorogued_calls
