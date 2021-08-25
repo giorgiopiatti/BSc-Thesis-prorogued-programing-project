@@ -14,8 +14,15 @@ class PPLEnableProroguedCallsStatic(type):
 
     '''
 
-    def __init__(cls, object_or_name, bases, dict):
+    def __new__(metacls, name, bases, namespace, **kwargs):
+        return super().__new__(metacls, name, bases, namespace)
+    
+    def __init__(cls, object_or_name, bases, dict, **kwargs):
         super().__init__(object_or_name, bases, dict)
+
+        do_cache = True
+        if 'cache' in kwargs.keys() and  kwargs['cache'] is False:
+            do_cache = False
 
         def getattr(self, name):
             if config.get_status():
@@ -34,7 +41,7 @@ class PPLEnableProroguedCallsStatic(type):
                 logger.info(
                     f"{self.__class__}.{name} {pretty_args} was called")  # FIXME: format of kwargs
 
-                handler = ProrogueHandler(self, name, args, kwargs)
+                handler = ProrogueHandler(self, name, args, kwargs, do_cache=do_cache)
 
                 # Register a new function on the class
                 setattr(cls, name, handler.prorogued_fn)
@@ -53,8 +60,15 @@ class PPLEnableProroguedCallsInstance(type):
         Prorogued function is bounded by object instance not by class
     '''
 
-    def __init__(cls, object_or_name, bases, dict):
+    def __new__(metacls, name, bases, namespace, **kwargs):
+        return super().__new__(metacls, name, bases, namespace)
+        
+    def __init__(cls, object_or_name, bases, dict, **kwargs):
         super().__init__(object_or_name, bases, dict)
+        
+        do_cache = True
+        if 'cache' in kwargs.keys() and  kwargs['cache'] is False:
+            do_cache = False
 
         def getattr(self, name):
             if config.get_status():
@@ -70,7 +84,7 @@ class PPLEnableProroguedCallsInstance(type):
                     f"{self.__class__}.{name} {pretty_args} was called")  # FIXME: format of kwargs
 
                 handler = ProrogueHandler(
-                    self, name, args, kwargs, instance_call=True)
+                    self, name, args, kwargs, instance_call=True, do_cache=do_cache)
 
                 # Register a new function on the object, notice how the function is the same for the whole class. i.e. we capture the fact that the
                 # function could depend from the object state

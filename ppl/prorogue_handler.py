@@ -10,7 +10,7 @@ from lark.exceptions import UnexpectedToken, VisitError
 
 from ppl.cache_helper import cache_key
 
-from ppl.io import write, get_input, write_instance
+from ppl.io import write, get_input, write_instance, error_message
 import cachetools
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ProrogueHandler:
 
-    def __init__(self, instance, name, args, kwargs, instance_call=False):
+    def __init__(self, instance, name, args, kwargs, instance_call=False, do_cache=True):
         self.name = name
         self.instance = instance
         self.class_name = instance.__class__.__name__
@@ -28,6 +28,7 @@ class ProrogueHandler:
         else:
             self.ppl_instance_dict = None
         self.instance_call = instance_call
+        self.do_cache = do_cache
 
     def fn_typecheck(self, args: tuple, kwargs: dict):
         '''
@@ -108,32 +109,39 @@ class ProrogueHandler:
         logger.info(
             f"{self.class_name}.{self.name} running ProrogueHandler")
         signature = FunctionCallSignature(args, kwargs)
-        try:
-            self.fn_typecheck(args, kwargs)
-            out = self.wrapper_get_out(
-                signature, *args, ppl_instance_dict=self.ppl_instance_dict, **kwargs)
-            return out
-        # Skip internal traceback, better preserves expected behavior to end programmer TODO: skip also this layer, but how?
-        except (PPLTypeError) as ex:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
+        while True:
             try:
-                exc_traceback = exc_traceback.tb_next
-                exc_traceback = exc_traceback.tb_next
-            except Exception:
-                pass
-            write(f'Error: {repr(ex)}')
-            raise ex.with_traceback(exc_traceback)
-        except PPLTypeWarning as ex:
-            write(f'WARNING: {repr(ex)}')
-            out = self.wrapper_get_out(
-                signature, *args, ppl_instance_dict=self.ppl_instance_dict,  **kwargs)
-            return out
+                self.fn_typecheck(args, kwargs)
+                out = self.wrapper_get_out(
+                    signature, *args, ppl_instance_dict=self.ppl_instance_dict, **kwargs)
+                return out
+            # Skip internal traceback, better preserves expected behavior to end programmer TODO: skip also this layer, but how?
+            except (PPLTypeError) as ex:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                try:
+                    exc_traceback = exc_traceback.tb_next
+                    exc_traceback = exc_traceback.tb_next
+                except Exception:
+                    pass
+                error_message(f'Error: {repr(ex)}')
+                #raise ex.with_traceback(exc_traceback)
+            except PPLTypeWarning as ex:
+                write(f'WARNING: {repr(ex)}')
+                out = self.wrapper_get_out(
+                    signature, *args, ppl_instance_dict=self.ppl_instance_dict,  **kwargs)
+                return out
 
     # Caches previous return's value by hash of all input parameters
     @cachetools.cached(cache={}, key=cache_key)
-    def wrapper_get_out(self, signature, *args, ppl_instance_dict, **kwargs):
+    def wrapper_get_out_cache(self, signature, *args, ppl_instance_dict, **kwargs):
         out = self.ask_for_output(args, kwargs)
         return out
+
+    def wrapper_get_out(self, signature, *args, ppl_instance_dict, **kwargs):
+        if self.do_cache:
+            return self.wrapper_get_out_cache(signature, *args, ppl_instance_dict=ppl_instance_dict, **kwargs)
+        else:
+            return  self.ask_for_output(args, kwargs)
 
     def save_return_value(self, programmer_input, kwargs):
         # We create different function context
@@ -164,8 +172,21 @@ class ProrogueHandler:
         return parse_to_python(programmer_input, function_context=function_context)
 
     def ask_for_output(self, args, kwargs):
+
+        pretty_print = ""
+        if len(args) == 1:
+            pretty_print += str(args)[1:-2]
+        elif len(args) > 1:
+            pretty_print += str(args)[1:-1]
+
+        if len(kwargs) > 0:
+            pretty_print += ", "
+            for (k, v) in kwargs.items():
+                pretty_print += f"{k}={v}, "
+            pretty_print = pretty_print[:-2]
+
         write(
-            f'> Function call to {self.class_name}.{self.name}({args},{kwargs}) was prorogued.')
+            f'> Function call to {self.class_name}.{self.name}({pretty_print}) was prorogued.')
         # TODO: we need to expose which object is associated, and its internal structure if we're using PPLEnableProroguedCallsInstance
 
         if self.instance_call:
