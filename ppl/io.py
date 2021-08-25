@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import sys
 
 
@@ -42,6 +43,10 @@ def write_instance(s):
     app.text_instance.delete(1.0, tk.END)
     app.text_instance.insert("end", f'{s}\n', ('stdout', ))
     app.text_instance.configure(state="disabled")
+
+
+def error_message(s):
+    messagebox.showerror(title='PPL', message=s)
 
 
 def get_input(msg):
